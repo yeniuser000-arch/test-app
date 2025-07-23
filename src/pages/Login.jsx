@@ -7,7 +7,7 @@ function Login() {
     email: "",
     password: "",
   });
-  const [error, setError] = useState('');
+  const [error] = useState('');
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
@@ -14,7 +14,7 @@ const AnketDetay = () => {
   const isAdmin = localStorage.getItem("rol") === "admin";
   const kullaniciId = localStorage.getItem("kullanici_id");
 
-  const anketGetir = async (girilenSifre = "") => {
+  const anketGetir = useCallback(async (girilenSifre = "") => {
     try {
       const res = await axios.get(`http://localhost:5024/api/anket/${id}`, {
         params: {
@@ -37,11 +37,11 @@ const AnketDetay = () => {
         setMesaj("❌ Anket detayları yüklenemedi.");
       }
     }
-  };
+  },[id,kullaniciId]);
 
   useEffect(() => {
     anketGetir();
-  }, [id]);
+  }, [anketGetir]);
 
   const sifreyiOnayla = () => {
     if (!sifre.trim()) {
