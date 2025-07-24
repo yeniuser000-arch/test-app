@@ -7,6 +7,12 @@ using MySql.Data.MySqlClient;
 public class UserController : ControllerBase
 {
     private readonly string connectionString = "server=localhost;database=anketdb;user=root;password=;";
+    private readonly IConfiguration _config;
+
+    public UserController(IConfiguration config)
+    {
+        _config = config;
+    }
 
     [HttpPost("register")]
     public IActionResult Register([FromBody] User kullanici)
@@ -15,14 +21,18 @@ public class UserController : ControllerBase
         try
         {
             conn.Open();
+
+            // Şifreyi hashle
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(kullanici.Password);
+
             string query = @"
-                INSERT INTO kullanici (kullanici_adi, kullanici_mail, kullanici_password, silindi)
-                VALUES (@Username, @Email, @Password, 0)";
+            INSERT INTO kullanici (kullanici_adi, kullanici_mail, kullanici_password, silindi)
+            VALUES (@Username, @Email, @Password, 0)";
 
             using var cmd = new MySqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@Username", kullanici.Username);
             cmd.Parameters.AddWithValue("@Email", kullanici.Email);
-            cmd.Parameters.AddWithValue("@Password", kullanici.Password);
+            cmd.Parameters.AddWithValue("@Password", hashedPassword); // Dikkat: hashlenmiş şifre
 
             cmd.ExecuteNonQuery();
             return Ok(new { message = "Kayıt başarılı" });
@@ -34,77 +44,75 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("login")]
-public IActionResult Login([FromBody] User kullanici)
-{
-    using var conn = new MySqlConnection(connectionString);
-    try
+    public IActionResult Login([FromBody] User kullanici)
     {
-        conn.Open();
-
-        // Kullanıcıyı bul
-        string kontrolQuery = "SELECT * FROM kullanici WHERE kullanici_mail = @Email AND silindi = 0";
-        using var kontrolCmd = new MySqlCommand(kontrolQuery, conn);
-        kontrolCmd.Parameters.AddWithValue("@Email", kullanici.Email);
-
-        using var reader = kontrolCmd.ExecuteReader();
-        if (!reader.Read())
+        using var conn = new MySqlConnection(connectionString);
+        try
         {
-            return Unauthorized(new { hata = "Kullanıcı bulunamadı." });
-        }
+            conn.Open();
 
-        // reader'dan gerekli tüm alanları oku
-        int kullaniciId = Convert.ToInt32(reader["kullanici_id"]);
-        string kullaniciAdi = reader["kullanici_adi"].ToString() ?? "";
-        string rol = reader["rol"].ToString() ?? "";
-        int hataliGirisSayisi = Convert.ToInt32(reader["hatali_giris_sayisi"]);
-        DateTime? sonHataZamani = reader["son_hatali_giris"] == DBNull.Value ? null : Convert.ToDateTime(reader["son_hatali_giris"]);
-        string dogruSifre = reader["kullanici_password"] == DBNull.Value ? "" : reader["kullanici_password"].ToString() ?? "";
+            string kontrolQuery = "SELECT * FROM kullanici WHERE kullanici_mail = @Email AND silindi = 0";
+            using var kontrolCmd = new MySqlCommand(kontrolQuery, conn);
+            kontrolCmd.Parameters.AddWithValue("@Email", kullanici.Email);
 
-        reader.Close(); // reader'dan sonra işlem yapabilirsin
+            using var reader = kontrolCmd.ExecuteReader();
+            if (!reader.Read())
+            {
+                return Unauthorized(new { hata = "Kullanıcı bulunamadı." });
+            }
 
-        // 5 kez hatalı girişten sonra 10 dakika beklet
-        if (hataliGirisSayisi >= 5 && sonHataZamani != null && DateTime.Now < sonHataZamani.Value.AddMinutes(10))
-        {
-            return Unauthorized(new { hata = "Çok fazla başarısız giriş. Lütfen 10 dakika sonra tekrar deneyin." });
-        }
+            int kullaniciId = Convert.ToInt32(reader["kullanici_id"]);
+            string kullaniciAdi = reader["kullanici_adi"].ToString() ?? "";
+            string rol = reader["rol"].ToString() ?? "";
+            int hataliGirisSayisi = Convert.ToInt32(reader["hatali_giris_sayisi"]);
+            DateTime? sonHataZamani = reader["son_hatali_giris"] == DBNull.Value ? null : Convert.ToDateTime(reader["son_hatali_giris"]);
+            string dogruHashliSifre = reader["kullanici_password"]?.ToString() ?? "";
 
-        // Şifre kontrolü
-        if (kullanici.Password != dogruSifre)
-        {
-            var updateCmd = new MySqlCommand(@"
+            reader.Close();
+
+            if (hataliGirisSayisi >= 5 && sonHataZamani != null && DateTime.Now < sonHataZamani.Value.AddMinutes(10))
+            {
+                return Unauthorized(new { hata = "Çok fazla başarısız giriş. Lütfen 10 dakika sonra tekrar deneyin." });
+            }
+
+            // Şifre doğrulama (BCrypt)
+            if (!BCrypt.Net.BCrypt.Verify(kullanici.Password, dogruHashliSifre))
+            {
+                var updateCmd = new MySqlCommand(@"
                 UPDATE kullanici 
                 SET hatali_giris_sayisi = hatali_giris_sayisi + 1,
                     son_hatali_giris = @zaman
                 WHERE kullanici_id = @id", conn);
-            updateCmd.Parameters.AddWithValue("@zaman", DateTime.Now);
-            updateCmd.Parameters.AddWithValue("@id", kullaniciId);
-            updateCmd.ExecuteNonQuery();
+                updateCmd.Parameters.AddWithValue("@zaman", DateTime.Now);
+                updateCmd.Parameters.AddWithValue("@id", kullaniciId);
+                updateCmd.ExecuteNonQuery();
 
-            return Unauthorized(new { hata = "Şifre hatalı." });
-        }
+                return Unauthorized(new { hata = "Şifre hatalı." });
+            }
 
-        // Hatalı giriş sayacını sıfırla
-        var resetCmd = new MySqlCommand(@"
+            var resetCmd = new MySqlCommand(@"
             UPDATE kullanici 
             SET hatali_giris_sayisi = 0, son_hatali_giris = NULL 
             WHERE kullanici_id = @id", conn);
-        resetCmd.Parameters.AddWithValue("@id", kullaniciId);
-        resetCmd.ExecuteNonQuery();
-
-        // Başarılı giriş
-        return Ok(new
+            resetCmd.Parameters.AddWithValue("@id", kullaniciId);
+            resetCmd.ExecuteNonQuery();
+            var tokenService = new TokenService(_config);
+            var token = tokenService.CreateToken(kullaniciId, kullaniciAdi, rol);
+            
+            return Ok(new
+            {
+                message = "Giriş başarılı",
+                token = token,
+                username = kullaniciAdi,
+                id = kullaniciId,
+                rol = rol
+            });
+        }
+        catch (Exception ex)
         {
-            message = "Giriş başarılı",
-            username = kullaniciAdi,
-            id = kullaniciId,
-            rol = rol
-        });
+            return BadRequest(new { hata = ex.Message });
+        }
     }
-    catch (Exception ex)
-    {
-        return BadRequest(new { hata = ex.Message });
-    }
-}
 
     [HttpGet("tumkullanicilar")]
     public IActionResult TumKullanicilariGetir()
