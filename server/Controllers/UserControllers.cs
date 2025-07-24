@@ -67,11 +67,12 @@ public class UserController : ControllerBase
             string dogruHashliSifre = reader["kullanici_password"]?.ToString() ?? "";
 
             reader.Close();
-
             if (hataliGirisSayisi >= 5 && sonHataZamani != null && DateTime.Now < sonHataZamani.Value.AddMinutes(10))
             {
                 return Unauthorized(new { hata = "Çok fazla başarısız giriş. Lütfen 10 dakika sonra tekrar deneyin." });
             }
+
+            
 
             // Şifre doğrulama (BCrypt)
             if (!BCrypt.Net.BCrypt.Verify(kullanici.Password, dogruHashliSifre))
