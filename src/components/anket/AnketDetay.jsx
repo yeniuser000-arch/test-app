@@ -1,6 +1,7 @@
 import React, { useEffect, useState,useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode';
 
 const AnketDetay = () => {
   const { id } = useParams();
@@ -10,8 +11,18 @@ const AnketDetay = () => {
   const [sifreGerekli, setSifreGerekli] = useState(false);
   const [seciliSecenekId, setSeciliSecenekId] = useState(null);
   const [oyVerildi, setOyVerildi] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const isAdmin = localStorage.getItem("rol") === "admin";
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      if (userRole === "admin") {
+        setIsAdmin(true);
+      }
+    }
+  }, []);
   const kullaniciId = localStorage.getItem("kullanici_id");
 
   const anketGetir = useCallback(async (girilenSifre = "") => {

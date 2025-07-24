@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode'; // jwt-decode kütüphanesini ekleyelim
 
 const AnketListePop = () => {
   const [anketler, setAnketler] = useState([]);
@@ -11,9 +12,22 @@ const AnketListePop = () => {
   const [showModal, setShowModal] = useState(false);
   const [seciliAnket, setSeciliAnket] = useState(null);
 
-
+  const [isAdmin, setIsAdmin] = useState(false); // Admin kontrolü
   const navigate = useNavigate();
 
+  // Admin kontrolünü useEffect ile başlatıyoruz
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const userRole = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+      if (userRole === "admin") {
+        setIsAdmin(true);
+      }
+    }
+  }, []);
+
+  // Anketleri yüklemek
   useEffect(() => {
     axios.get("http://localhost:5024/api/anket/listele")
       .then(res => {
@@ -82,6 +96,13 @@ const AnketListePop = () => {
                   🗨️ {anket.soru}
                 </h4>
 
+                {/* Admin'e özel toplam oy sayısını göster */}
+                {isAdmin && (
+                  <span className="text-sm text-gray-600">
+                    Toplam Oy: {anket.toplamOy}
+                  </span>
+                )}
+
                 {!anket.aktif && (
                   <div className="flex items-center gap-2">
                     <span className="text-xs px-2 py-1 bg-red-100 text-red-500 rounded">Pasif</span>
@@ -102,6 +123,7 @@ const AnketListePop = () => {
           ))}
         </div>
       )}
+
       {showModal && seciliAnket && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -122,8 +144,7 @@ const AnketListePop = () => {
             <p><strong>Pasife alan:</strong> {seciliAnket.pasifeAlanKullaniciAdi || "Bilinmiyor"}</p>
             <p><strong>Tarih:</strong> {seciliAnket.pasifTarihi
               ? new Date(seciliAnket.pasifTarihi).toLocaleString("tr-TR")
-              : "Bilinmiyor"}
-            </p>
+              : "Bilinmiyor"}</p>
             <p><strong>Açıklama:</strong> {seciliAnket.pasifAciklama || "Yok"}</p>
           </div>
         </div>
