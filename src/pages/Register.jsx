@@ -37,7 +37,7 @@ function Register() {
     <div
       className="min-h-screen bg-cover bg-center flex justify-center items-center px-4"
       style={{
-        backgroundImage: `url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1920&q=80')`,
+        backgroundImage: `url('https://images.unsplash.com/photo-1557683304-673a23048d34?auto=format&fit=crop&w=1920&q=80')`,
       }}
     >
       <form
