@@ -21,8 +21,6 @@ public class UserController : ControllerBase
         try
         {
             conn.Open();
-
-            // Şifreyi hashle
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(kullanici.Password);
 
             string query = @"
@@ -32,7 +30,7 @@ public class UserController : ControllerBase
             using var cmd = new MySqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@Username", kullanici.Username);
             cmd.Parameters.AddWithValue("@Email", kullanici.Email);
-            cmd.Parameters.AddWithValue("@Password", hashedPassword); // Dikkat: hashlenmiş şifre
+            cmd.Parameters.AddWithValue("@Password", hashedPassword); 
 
             cmd.ExecuteNonQuery();
             return Ok(new { message = "Kayıt başarılı" });

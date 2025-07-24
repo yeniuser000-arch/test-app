@@ -1,14 +1,33 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ChevronDown } from "lucide-react"; 
+import { ChevronDown } from "lucide-react";
+import { jwtDecode } from "jwt-decode";
 
 function Navbar() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
-
+  
   useEffect(() => {
-    const adminFlag = localStorage.getItem("isAdmin") === "true";
-    setIsAdmin(adminFlag);
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      try {
+        // Token'ı çözümleyin
+        const decodedToken = jwtDecode(token);
+
+        // Role bilgisine erişin
+        const userRole = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+        // Admin kontrolü yapın
+        if (userRole === "admin") {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.log("Token çözümleme hatası:", error);
+      }
+    }
   }, []);
 
   const handleLogout = () => {
@@ -32,38 +51,35 @@ function Navbar() {
           </Link>
 
           {isAdmin && (
-  <div className="relative group">
-    <button className="flex items-center hover:text-gray-200 transition">
-      Admin Paneli <ChevronDown className="ml-1 w-4 h-4" />
-    </button>
+            <div className="relative group">
+              <button className="flex items-center hover:text-gray-200 transition">
+                Admin Paneli <ChevronDown className="ml-1 w-4 h-4" />
+              </button>
 
-    <div className="absolute left-0 invisible group-hover:visible 
-                    opacity-0 group-hover:opacity-100 
-                    translate-y-1 group-hover:translate-y-0
-                    transition-all duration-200 ease-out
-                    bg-white text-gray-800 mt-2 rounded-md shadow-lg 
-                    min-w-[180px] z-50">
-      <Link
-        to="/admin/anket-ekle"
-        className="block px-4 py-2 hover:bg-gray-100 transition"
-      >
-        ➕ Anket Ekle
-      </Link>
-      <Link
-        to="/admin/anket-sil"
-        className="block px-4 py-2 hover:bg-gray-100 transition"
-      >
-        🗑️ Anket Sil
-      </Link>
-      <Link
-        to="/admin/kullanicilar"
-        className="block px-4 py-2 hover:bg-gray-100 transition"
-      >
-        👥 Kullanıcı Kontrolü
-      </Link>
-    </div>
-  </div>
-)}
+              <div className="absolute left-0 invisible group-hover:visible opacity-0 group-hover:opacity-100 
+                              translate-y-1 group-hover:translate-y-0 transition-all duration-200 ease-out
+                              bg-white text-gray-800 mt-2 rounded-md shadow-lg min-w-[180px] z-50">
+                <Link
+                  to="/admin/anket-ekle"
+                  className="block px-4 py-2 hover:bg-gray-100 transition"
+                >
+                  ➕ Anket Ekle
+                </Link>
+                <Link
+                  to="/admin/anket-sil"
+                  className="block px-4 py-2 hover:bg-gray-100 transition"
+                >
+                  🗑️ Anket Sil
+                </Link>
+                <Link
+                  to="/admin/kullanicilar"
+                  className="block px-4 py-2 hover:bg-gray-100 transition"
+                >
+                  👥 Kullanıcı Kontrolü
+                </Link>
+              </div>
+            </div>
+          )}
 
           <button
             onClick={handleLogout}

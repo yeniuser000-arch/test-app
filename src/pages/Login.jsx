@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { jwtDecode } from 'jwt-decode';
 
 function Login() {
   const [form, setForm] = useState({
@@ -24,19 +25,25 @@ function Login() {
         Email: form.email,
         Password: form.password,
       });
+      const decodedToken = jwtDecode(response.data.token);
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      } else {
+        console.log('Token bulunamadı!');
+      }
 
       const kullanici = response.data;
 
       localStorage.setItem('kullanici_id', kullanici.id);
       localStorage.setItem('kullanici_adi', kullanici.username);
-      localStorage.setItem('rol', kullanici.rol);
-      localStorage.setItem('isAdmin', kullanici.rol === 'admin' ? 'true' : 'false');
+      localStorage.setItem('isAdmin', decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] === 'admin' ? 'true' : 'false');
 
       navigate('/home');
     } catch (error) {
       setError(error.response?.data?.hata || 'Giriş hatası oluştu.');
     }
   };
+
 
   return (
     <div
@@ -103,5 +110,7 @@ function Login() {
     </div>
   );
 }
+
+
 
 export default Login;
