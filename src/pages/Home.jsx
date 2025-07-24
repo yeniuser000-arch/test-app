@@ -36,7 +36,7 @@ const Home = () => {
 
   return (
     <div className="p-8 font-sans">
-      <h2 className="text-3xl font-bold mb-8 text-gray-800">📋 Yayınlanan Anketler</h2>
+      <h2 className="text-3xl font-bold mb-8 text-gray-800"> Yayınlanan Anketler</h2>
 
       {/* Filtre Butonları */}
       <div className="flex gap-4 mb-10">
@@ -74,7 +74,7 @@ const Home = () => {
             >
               <div className="flex justify-between items-center mb-2">
                 <h4 className="text-xl font-semibold">
-                  🗨️ {anket.soru}
+                   {anket.soru}
                 </h4>
 
                  {!anket.aktif && (

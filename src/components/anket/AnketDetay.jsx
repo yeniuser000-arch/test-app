@@ -41,7 +41,7 @@ const AnketDetay = () => {
     } catch (err) {
       if (err.response?.status === 401) {
         setSifreGerekli(true);
-        setMesaj("🔒 Bu ankete erişmek için şifre gerekli.");
+        setMesaj("Bu ankete erişmek için şifre gerekli.");
       } else if (err.response?.data?.mesaj) {
         setMesaj("❌ " + err.response.data.mesaj);
       } else {

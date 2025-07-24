@@ -39,7 +39,7 @@ function Navbar() {
     <nav className="bg-blue-700 text-white shadow-md py-3">
       <div className="container mx-auto flex justify-between items-center px-4">
         <h1 className="text-2xl font-bold tracking-tight">
-          <Link to="/home">📊 Anket Uygulaması</Link>
+          <Link to="/home">Anket Uygulaması</Link>
         </h1>
 
         <div className="flex space-x-6 items-center">
@@ -63,19 +63,19 @@ function Navbar() {
                   to="/admin/anket-ekle"
                   className="block px-4 py-2 hover:bg-gray-100 transition"
                 >
-                  ➕ Anket Ekle
+                   Anket Ekle
                 </Link>
                 <Link
                   to="/admin/anket-sil"
                   className="block px-4 py-2 hover:bg-gray-100 transition"
                 >
-                  🗑️ Anket Sil
+                   Anket Sil
                 </Link>
                 <Link
                   to="/admin/kullanicilar"
                   className="block px-4 py-2 hover:bg-gray-100 transition"
                 >
-                  👥 Kullanıcı Kontrolü
+                   Kullanıcı Kontrolü
                 </Link>
               </div>
             </div>
