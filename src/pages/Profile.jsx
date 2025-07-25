@@ -39,28 +39,28 @@ const Profile = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      {error && <div className="text-red-500">{error}</div>}
+    <div className="w-full max-w-2xl p-8 text-left">
+      {error && <div className="text-red-600 text-xl mb-4">{error}</div>}
       {userInfo ? (
         <div>
-          <h2 className="text-3xl font-bold mb-4">Profilim</h2>
-          <div className="mb-4">
-            <label className="block font-medium">Kullanıcı Adı</label>
-            <p>{userInfo.username}</p>
+          <h2 className="text-4xl font-bold mb-6">Profilim</h2>
+          <div className="mb-6">
+            <label className="block text-2xl font-semibold mb-1">Kullanıcı Adı</label>
+            <p className="text-xl">{userInfo.username}</p>
           </div>
-          <div className="mb-4">
-            <label className="block font-medium">E-posta</label>
-            <p>{userInfo.email}</p>
+          <div className="mb-6">
+            <label className="block text-2xl font-semibold mb-1">E-posta</label>
+            <p className="text-xl">{userInfo.email}</p>
           </div>
           <button
             onClick={handleEdit}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white text-lg px-6 py-3 rounded"
           >
             Düzenle
           </button>
         </div>
       ) : (
-        <p>Yükleniyor...</p>
+        <p className="text-xl">Yükleniyor...</p>
       )}
     </div>
   );

@@ -36,7 +36,7 @@ const AdminAnketListe = () => {
 
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">🛠️ Admin - Anket Yönetimi</h2>
+      <h2 className="text-2xl font-bold mb-4">Admin - Anket Yönetimi</h2>
       {mesaj && <p className="mb-4 text-sm text-blue-600">{mesaj}</p>}
 
       {anketler.length === 0 ? (

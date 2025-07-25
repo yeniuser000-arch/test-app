@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { PencilLine, Plus, Lock, ListTodo, Type } from "lucide-react";
 
 const AnketEkle = () => {
   const [soru, setSoru] = useState("");
@@ -48,22 +49,32 @@ const AnketEkle = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white rounded shadow space-y-4">
-      <h2 className="text-2xl font-semibold">📝 Yeni Anket Ekle</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="max-w-2xl mx-auto p-8 bg-white shadow-xl rounded-2xl mt-8 space-y-6">
+      <h2 className="text-4xl font-bold text-center text-gray-800 flex items-center justify-center gap-3">
+        <ListTodo className="w-8 h-8 text-blue-600" />
+        Yeni Anket Oluştur
+      </h2>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-gray-700">Soru:</label>
+          <label className="text-lg font-semibold text-gray-700 mb-1 flex items-center gap-2">
+            <Type className="w-5 h-5 text-gray-600" />
+            Soru
+          </label>
           <input
             type="text"
             value={soru}
             onChange={(e) => setSoru(e.target.value)}
             required
-            className="w-full mt-1 p-2 border rounded"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
         </div>
 
         <div>
-          <label className="block text-gray-700">Seçenekler:</label>
+          <label className="text-lg font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <PencilLine className="w-5 h-5 text-gray-600" />
+            Seçenekler
+          </label>
           {secenekler.map((secenek, index) => (
             <input
               key={index}
@@ -71,38 +82,44 @@ const AnketEkle = () => {
               value={secenek}
               onChange={(e) => handleSecenekDegis(index, e.target.value)}
               required
-              className="w-full mt-1 p-2 border rounded mb-2"
+              placeholder={`Seçenek ${index + 1}`}
+              className="w-full mb-2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
             />
           ))}
+
           <button
             type="button"
             onClick={secenekEkle}
-            className="text-blue-600 hover:underline mt-1"
+            className="mt-2 inline-flex items-center gap-1 text-sm bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-full hover:bg-blue-200 transition"
           >
-            ➕ Seçenek Ekle
+            <Plus className="w-4 h-4" />
+            Yeni Seçenek Ekle
           </button>
         </div>
 
         <div>
-          <label className="block text-gray-700">🔒 Anket Şifresi (Opsiyonel):</label>
+          <label className="text-lg font-semibold text-gray-700 mb-1 flex items-center gap-2">
+            <Lock className="w-5 h-5 text-gray-600" />
+            Anket Şifresi (Opsiyonel)
+          </label>
           <input
             type="password"
             value={sifre}
             onChange={(e) => setSifre(e.target.value)}
-            placeholder="Şifre belirlemek isterseniz girin"
-            className="w-full mt-1 p-2 border rounded"
+            placeholder="İsteğe bağlı şifre girin"
+            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
           />
         </div>
 
         <button
           type="submit"
-          className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
+          className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-3 rounded-xl shadow-md transition"
         >
           Anketi Kaydet
         </button>
       </form>
 
-      {mesaj && <p className="text-green-600">{mesaj}</p>}
+      {mesaj && <p className="text-green-600 text-center text-lg mt-4">{mesaj}</p>}
     </div>
   );
 };
