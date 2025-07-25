@@ -11,6 +11,8 @@ import AnketEkle from "./components/anket/AnketEkle";
 import AnketSil from "./components/AnketSil";
 import KullaniciKontrol from "./components/KullaniciKontrol";
 import SilinenKullanicilar from "./components/SilinenKullanicilar";
+import Profile from "./pages/Profile";
+import ProfileEdit from "./components/ProfileEdit";
 
 function App() {
   return (
@@ -32,6 +34,8 @@ function App() {
           <Route path="home" element={<Home />} />
           <Route path="anket/:id" element={<AnketDetay />} />
           <Route path="anketListePop" element={<AnketListePop />} />
+          <Route path="profile" element={<Profile/>}/>
+          <Route path="profile/edit/:id" element={<ProfileEdit/>} />
         </Route>
 
        

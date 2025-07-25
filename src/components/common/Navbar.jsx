@@ -1,29 +1,22 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 
 function Navbar() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
-  
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
-
     if (token) {
       try {
-        // Token'ı çözümleyin
         const decodedToken = jwtDecode(token);
-
-        // Role bilgisine erişin
-        const userRole = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
-        // Admin kontrolü yapın
-        if (userRole === "admin") {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
+        const userRole =
+          decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+        setIsAdmin(userRole === "admin");
       } catch (error) {
         console.log("Token çözümleme hatası:", error);
       }
@@ -36,48 +29,60 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-blue-700 text-white shadow-md py-3">
-      <div className="container mx-auto flex justify-between items-center px-4">
-        <h1 className="text-2xl font-bold tracking-tight">
-          <Link to="/home">Anket Uygulaması</Link>
+    <nav className="bg-blue-700 text-white shadow-md">
+      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        <h1 className="text-2xl font-bold">
+          <Link to="/home">📊 Anket Uygulaması</Link>
         </h1>
 
-        <div className="flex space-x-6 items-center">
-          <Link to="/home" className="hover:text-gray-200 transition">
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden focus:outline-none"
+        >
+          {menuOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+
+        <div className={`flex-col md:flex md:flex-row md:items-center md:space-x-6 space-y-3 md:space-y-0 w-full md:w-auto mt-4 md:mt-0 ${menuOpen ? "flex" : "hidden"}`}>
+          <Link to="/home" className="hover:text-gray-200">
             Anasayfa
           </Link>
-          <Link to="/anketListePop" className="hover:text-gray-200 transition">
+          <Link to="/anketListePop" className="hover:text-gray-200">
             Popüler Anketler
+          </Link>
+          <Link to="/profile" className="hover:text-gray-200">
+            Profilim
           </Link>
 
           {isAdmin && (
-            <div className="relative group">
-              <button className="flex items-center hover:text-gray-200 transition">
+            <div className="relative">
+              <button
+                onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                className="flex items-center hover:text-gray-200"
+              >
                 Admin Paneli <ChevronDown className="ml-1 w-4 h-4" />
               </button>
-
-              <div className="absolute left-0 invisible group-hover:visible opacity-0 group-hover:opacity-100 
-                              translate-y-1 group-hover:translate-y-0 transition-all duration-200 ease-out
-                              bg-white text-gray-800 mt-2 rounded-md shadow-lg min-w-[180px] z-50">
-                <Link
-                  to="/admin/anket-ekle"
-                  className="block px-4 py-2 hover:bg-gray-100 transition"
-                >
-                   Anket Ekle
-                </Link>
-                <Link
-                  to="/admin/anket-sil"
-                  className="block px-4 py-2 hover:bg-gray-100 transition"
-                >
-                   Anket Sil
-                </Link>
-                <Link
-                  to="/admin/kullanicilar"
-                  className="block px-4 py-2 hover:bg-gray-100 transition"
-                >
-                   Kullanıcı Kontrolü
-                </Link>
-              </div>
+              {adminMenuOpen && (
+                <div className="absolute bg-white text-gray-800 mt-2 rounded-md shadow-lg min-w-[180px] z-50">
+                  <Link
+                    to="/admin/anket-ekle"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    ➕ Anket Ekle
+                  </Link>
+                  <Link
+                    to="/admin/anket-sil"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    🗑️ Anket Sil
+                  </Link>
+                  <Link
+                    to="/admin/kullanicilar"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    👥 Kullanıcı Kontrolü
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

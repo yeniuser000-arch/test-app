@@ -1,17 +1,17 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; 
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Register() {
   const [form, setForm] = useState({
     Username: "",
     Email: "",
     Password: "",
+    ConfirmPassword: "",
   });
 
-  const [showPassword, setShowPassword] = useState(false); 
-
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -22,10 +22,32 @@ function Register() {
     setShowPassword((prev) => !prev);
   };
 
+  const isEmailValid = (email) => {
+    return /\S+@\S+\.\S+/.test(email);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation
+    if (!isEmailValid(form.Email)) {
+      alert("Geçerli bir e-posta adresi girin.");
+      return;
+    }
+
+    if (form.Password.length < 6) {
+      alert("Şifre en az 6 karakter olmalıdır.");
+      return;
+    }
+
+    if (form.Password !== form.ConfirmPassword) {
+      alert("Şifreler eşleşmiyor.");
+      return;
+    }
+
     try {
-      const res = await axios.post("http://localhost:5024/api/user/register", form);
+      const { ConfirmPassword, ...postData } = form; // ConfirmPassword gönderilmeyecek
+      const res = await axios.post("http://localhost:5024/api/user/register", postData);
       alert("Kayıt başarılı: " + res.data.message);
       navigate("/home");
     } catch (error) {
@@ -65,11 +87,12 @@ function Register() {
           className="w-full px-4 py-2 rounded-lg bg-white/80 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
+
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             name="Password"
-            placeholder="Şifre"
+            placeholder="Şifre (min. 6 karakter)"
             value={form.Password}
             onChange={handleChange}
             className="w-full px-4 py-2 pr-10 rounded-lg bg-white/80 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -83,6 +106,16 @@ function Register() {
             {showPassword ? <FaEyeSlash /> : <FaEye />}
           </button>
         </div>
+
+        <input
+          type={showPassword ? "text" : "password"}
+          name="ConfirmPassword"
+          placeholder="Şifre Tekrar"
+          value={form.ConfirmPassword}
+          onChange={handleChange}
+          className="w-full px-4 py-2 pr-10 rounded-lg bg-white/80 placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+        />
 
         <button
           type="submit"

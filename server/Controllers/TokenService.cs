@@ -25,12 +25,12 @@ public class TokenService
         };
 
         string? jwtKey = _config["Jwt:Key"];
-if (string.IsNullOrEmpty(jwtKey))
-{
-    throw new Exception("JWT anahtarı bulunamadı! appsettings.json içinde 'Jwt:Key' tanımlı olmalı.");
-}
+        if (string.IsNullOrEmpty(jwtKey))
+        {
+            throw new Exception("JWT anahtarı bulunamadı! appsettings.json içinde 'Jwt:Key' tanımlı olmalı.");
+        }
 
-var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -43,4 +43,5 @@ var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    
 }

@@ -21,6 +21,22 @@ public class UserController : ControllerBase
         try
         {
             conn.Open();
+            var kontrolQuery = @"
+            SELECT COUNT(*) 
+            FROM kullanici 
+            WHERE kullanici_adi = @Username OR kullanici_mail = @Email";
+
+            using var kontrolCmd = new MySqlCommand(kontrolQuery, conn);
+            kontrolCmd.Parameters.AddWithValue("@Username", kullanici.Username);
+            kontrolCmd.Parameters.AddWithValue("@Email", kullanici.Email);
+
+            var existing = Convert.ToInt32(kontrolCmd.ExecuteScalar());
+
+            if (existing > 0)
+            {
+                return BadRequest(new { hata = "Bu kullanıcı adı veya e-posta zaten kayıtlı." });
+            }
+
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(kullanici.Password);
 
             string query = @"
@@ -30,7 +46,7 @@ public class UserController : ControllerBase
             using var cmd = new MySqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@Username", kullanici.Username);
             cmd.Parameters.AddWithValue("@Email", kullanici.Email);
-            cmd.Parameters.AddWithValue("@Password", hashedPassword); 
+            cmd.Parameters.AddWithValue("@Password", hashedPassword);
 
             cmd.ExecuteNonQuery();
             return Ok(new { message = "Kayıt başarılı" });
@@ -72,7 +88,7 @@ public class UserController : ControllerBase
                 return Unauthorized(new { hata = "Çok fazla başarısız giriş. Lütfen 10 dakika sonra tekrar deneyin." });
             }
 
-            
+
 
             // Şifre doğrulama (BCrypt)
             if (!BCrypt.Net.BCrypt.Verify(kullanici.Password, dogruHashliSifre))
@@ -97,7 +113,7 @@ public class UserController : ControllerBase
             resetCmd.ExecuteNonQuery();
             var tokenService = new TokenService(_config);
             var token = tokenService.CreateToken(kullaniciId, kullaniciAdi, rol);
-            
+
             return Ok(new
             {
                 message = "Giriş başarılı",
@@ -144,8 +160,6 @@ public class UserController : ControllerBase
 
         return Ok(kullaniciListesi);
     }
-
-    // SOFT DELETE UYGULANDI!
     [HttpDelete("sil/{id}")]
     public IActionResult KullaniciSil(int id)
     {
@@ -216,4 +230,111 @@ public class UserController : ControllerBase
 
         return Ok(liste);
     }
+    [HttpGet("{id}")]
+    public IActionResult GetUser(int id)
+    {
+        using var conn = new MySqlConnection(connectionString);
+        try
+        {
+            conn.Open();
+            string query = @"
+            SELECT kullanici_id, kullanici_adi, kullanici_mail 
+            FROM kullanici 
+            WHERE kullanici_id = @id AND silindi = 0";
+
+            using var cmd = new MySqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@id", id);
+
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                var user = new UserGet
+                {
+                    Id = Convert.ToInt32(reader["kullanici_id"]),
+                    Username = reader["kullanici_adi"].ToString() ?? "",
+                    Email = reader["kullanici_mail"].ToString() ?? "",
+                };
+
+                return Ok(user);
+            }
+
+            return NotFound(new { hata = "Kullanıcı bulunamadı" });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { hata = ex.Message });
+        }
+    }
+    [HttpPut("{id}")]
+    public IActionResult Guncelle(int id, [FromBody] User kullanici)
+    {
+        if (kullanici == null)
+            return BadRequest("Geçersiz kullanıcı verisi.");
+
+        using var conn = new MySqlConnection(connectionString);
+        conn.Open();
+
+        string? hashedPassword = null;
+        if (!string.IsNullOrEmpty(kullanici.Password))
+        {
+            // Şifreyi sadece BCRYPT ile hashle
+            hashedPassword = BCrypt.Net.BCrypt.HashPassword(kullanici.Password);
+        }
+
+        // Kullanıcı var mı kontrolü
+        var query = "SELECT * FROM kullanici WHERE kullanici_id = @id";
+
+        using var cmd = new MySqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@id", id);
+
+        using var reader = cmd.ExecuteReader();
+        if (!reader.HasRows)
+            return NotFound("Kullanıcı bulunamadı.");
+
+        reader.Close();
+        var kontrolQuery = @"
+            SELECT COUNT(*) 
+            FROM kullanici 
+            WHERE (kullanici_adi = @Username OR kullanici_mail = @Email)
+            AND kullanici_id != @Id";
+
+        using var kontrolCmd = new MySqlCommand(kontrolQuery, conn);
+        kontrolCmd.Parameters.AddWithValue("@Username", kullanici.Username);
+        kontrolCmd.Parameters.AddWithValue("@Email", kullanici.Email);
+        kontrolCmd.Parameters.AddWithValue("@Id", id);
+
+        var existing = Convert.ToInt32(kontrolCmd.ExecuteScalar());
+
+        if (existing > 0)
+        {
+            return BadRequest(new { hata = "Bu kullanıcı adı veya e-posta zaten kayıtlı." });
+        }
+
+        // Güncelleme sorgusu
+        query = @"
+        UPDATE kullanici 
+        SET kullanici_adi = @username, 
+            kullanici_mail = @email" +
+            (hashedPassword != null ? ", kullanici_password = @password" : "") + @"
+        WHERE kullanici_id = @id";
+
+        using var updateCmd = new MySqlCommand(query, conn);
+        updateCmd.Parameters.AddWithValue("@username", kullanici.Username);
+        updateCmd.Parameters.AddWithValue("@email", kullanici.Email);
+        updateCmd.Parameters.AddWithValue("@id", id);
+
+        if (hashedPassword != null)
+        {
+            updateCmd.Parameters.AddWithValue("@password", hashedPassword);
+        }
+
+        int affected = updateCmd.ExecuteNonQuery();
+
+        if (affected == 0)
+            return NotFound("Kullanıcı bilgileri güncellenemedi.");
+
+        return Ok("Kullanıcı bilgileri güncellendi.");
+    }
+
+
 }
