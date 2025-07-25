@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 const PrivateRoute = ({ children, adminOnly = false }) => {
   const token = localStorage.getItem("token");
@@ -10,8 +10,8 @@ const PrivateRoute = ({ children, adminOnly = false }) => {
     try {
       const decodedToken = jwtDecode(token);
       const role = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-      isAuthenticated = true; 
-      isAdmin = role === "admin"; 
+      isAuthenticated = true;
+      isAdmin = role === "admin";
     } catch (error) {
       console.log("Token çözümleme hatası:", error);
     }

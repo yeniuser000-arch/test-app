@@ -83,14 +83,23 @@ public class UserController : ControllerBase
             string dogruHashliSifre = reader["kullanici_password"]?.ToString() ?? "";
 
             reader.Close();
-            if (hataliGirisSayisi >= 5 && sonHataZamani != null && DateTime.Now < sonHataZamani.Value.AddMinutes(10))
+            if (hataliGirisSayisi >= 5)
             {
-                return Unauthorized(new { hata = "Çok fazla başarısız giriş. Lütfen 10 dakika sonra tekrar deneyin." });
+                if (sonHataZamani != null && DateTime.Now < sonHataZamani.Value.AddMinutes(10))
+                {
+                    return Unauthorized(new { hata = "Çok fazla başarısız giriş. Lütfen 10 dakika sonra tekrar deneyin." });
+                }
+                else
+                {
+                    var resetHatalilarCmd = new MySqlCommand(@"
+                    UPDATE kullanici 
+                    SET hatali_giris_sayisi = 0, son_hatali_giris = NULL 
+                    WHERE kullanici_id = @id", conn);
+                    resetHatalilarCmd.Parameters.AddWithValue("@id", kullaniciId);
+                    resetHatalilarCmd.ExecuteNonQuery();
+                    hataliGirisSayisi = 0;
+                }
             }
-
-
-
-            // Şifre doğrulama (BCrypt)
             if (!BCrypt.Net.BCrypt.Verify(kullanici.Password, dogruHashliSifre))
             {
                 var updateCmd = new MySqlCommand(@"
@@ -277,11 +286,9 @@ public class UserController : ControllerBase
         string? hashedPassword = null;
         if (!string.IsNullOrEmpty(kullanici.Password))
         {
-            // Şifreyi sadece BCRYPT ile hashle
             hashedPassword = BCrypt.Net.BCrypt.HashPassword(kullanici.Password);
         }
 
-        // Kullanıcı var mı kontrolü
         var query = "SELECT * FROM kullanici WHERE kullanici_id = @id";
 
         using var cmd = new MySqlCommand(query, conn);
@@ -309,8 +316,6 @@ public class UserController : ControllerBase
         {
             return BadRequest(new { hata = "Bu kullanıcı adı veya e-posta zaten kayıtlı." });
         }
-
-        // Güncelleme sorgusu
         query = @"
         UPDATE kullanici 
         SET kullanici_adi = @username, 
@@ -335,6 +340,4 @@ public class UserController : ControllerBase
 
         return Ok("Kullanıcı bilgileri güncellendi.");
     }
-
-
 }

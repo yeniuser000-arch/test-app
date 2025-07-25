@@ -44,26 +44,23 @@ function KullaniciKontrol() {
 
   return (
     <div className="p-6">
-      {/* Geri Dön Butonu */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold"> Kullanıcı Kontrolü</h2>
-         <div className="flex gap-2">
-        <button
-          onClick={handleGeriDon}
-          className="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-gray-400"
-        >
-          🔙 Geri Dön
-        </button>
-        <button
-      onClick={() => navigate("/admin/silinen-kullanicilar")}
-      className="bg-red-600 text-white px-4 py-2 rounded hover:bg-yellow-600"
-    >
-      🗑️ Silinen Kullanıcılar
-    </button>
-    </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleGeriDon}
+            className="flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 rounded hover:bg-gray-400"
+          >
+            🔙 Geri Dön
+          </button>
+          <button
+            onClick={() => navigate("/admin/silinen-kullanicilar")}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-yellow-600"
+          >
+            🗑️ Silinen Kullanıcılar
+          </button>
+        </div>
       </div>
-
-      {/* İçerik */}
       {loading ? (
         <p>Yükleniyor...</p>
       ) : error ? (
@@ -101,8 +98,6 @@ function KullaniciKontrol() {
           </table>
         </div>
       )}
-
-      {/* Toast mesajlarını göstermek için */}
       <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );

@@ -5,7 +5,6 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Veritabanı bağlantısını test et
 string connStr = "server=localhost;port=3306;database=anketdb;user=root;password=;";
 using var conn = new MySqlConnection(connStr);
 try
@@ -17,8 +16,6 @@ catch (Exception ex)
 {
     Console.WriteLine("❌ Hata: " + ex.Message);
 }
-
-// CORS ayarları
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
@@ -29,8 +26,6 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod();
         });
 });
-
-// JWT yapılandırması
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 string? keyString = jwtSettings["Key"];
 if (string.IsNullOrEmpty(keyString))
@@ -67,7 +62,7 @@ var app = builder.Build();
 app.UseRouting();
 app.UseCors("AllowReactApp");
 
-app.UseAuthentication(); // 🔐 Authentication middleware
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

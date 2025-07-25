@@ -16,7 +16,7 @@ namespace server.Models
         public DateTime? PasifTarihi { get; set; }
         public int KullaniciId { get; set; }
         public string? PasifeAlanKullaniciAdi { get; set; }
-        public string? PasifAciklama { get; set; } 
+        public string? PasifAciklama { get; set; }
         public List<SecenekDto> Secenekler { get; set; } = new();
     }
 
@@ -25,6 +25,6 @@ namespace server.Models
         public int AnketId { get; set; }
         public int KullaniciId { get; set; }
         public string? PasifAciklama { get; set; }
-}
+    }
 
 }

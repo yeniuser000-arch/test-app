@@ -1,7 +1,7 @@
-import React, { useEffect, useState,useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 const AnketDetay = () => {
   const { id } = useParams();
@@ -35,7 +35,7 @@ const AnketDetay = () => {
       });
       setAnket(res.data);
       setOyVerildi(res.data.oyVerildi);
-      setSeciliSecenekId(res.data.kullaniciSecimi);  // sunucudan gelen durum
+      setSeciliSecenekId(res.data.kullaniciSecimi);
       setMesaj("");
       setSifreGerekli(false);
     } catch (err) {
@@ -48,7 +48,7 @@ const AnketDetay = () => {
         setMesaj("❌ Anket detayları yüklenemedi.");
       }
     }
-  },[id,kullaniciId]);
+  }, [id, kullaniciId]);
 
   useEffect(() => {
     anketGetir();
@@ -80,7 +80,7 @@ const AnketDetay = () => {
 
       setMesaj("✅ Oy başarıyla eklendi.");
       setOyVerildi(true);
-      anketGetir(sifre); // güncelle
+      anketGetir(sifre);
     } catch (err) {
       setMesaj("❌ " + (err.response?.data?.mesaj || "Oy verme hatası"));
     }
@@ -124,12 +124,12 @@ const AnketDetay = () => {
                     onClick={() => setSeciliSecenekId(secenek.secenek_id)}
                     disabled={oyVerildi}
                     className={`px-3 py-1 rounded text-white ${oyVerildi
-                        ? secenek.secenek_id === seciliSecenekId
-                          ? "bg-green-600"
-                          : "bg-gray-400"
-                        : secenek.secenek_id === seciliSecenekId
-                          ? "bg-blue-700"
-                          : "bg-blue-500 hover:bg-blue-600"
+                      ? secenek.secenek_id === seciliSecenekId
+                        ? "bg-green-600"
+                        : "bg-gray-400"
+                      : secenek.secenek_id === seciliSecenekId
+                        ? "bg-blue-700"
+                        : "bg-blue-500 hover:bg-blue-600"
                       }`}
                   >
                     {oyVerildi
@@ -141,11 +141,9 @@ const AnketDetay = () => {
                         : "Seç"}
                   </button>
                 </div>
-
-                {/* Oy tarihi sadece seçilen seçenek altında görünür */}
                 {oyVerildi && secenek.secenek_id === seciliSecenekId && anket.oyTarihi && (
                   <p className="text-sm text-gray-600 mt-1 ml-2">
-                  Oy verdiğiniz tarih: {new Date(anket.oyTarihi).toLocaleString()}
+                    Oy verdiğiniz tarih: {new Date(anket.oyTarihi).toLocaleString()}
                   </p>
                 )}
               </li>

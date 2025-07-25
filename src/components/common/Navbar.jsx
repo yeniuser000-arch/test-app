@@ -32,7 +32,7 @@ function Navbar() {
     <nav className="bg-blue-700 text-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <h1 className="text-2xl font-bold">
-          <Link to="/home">📊 Anket Uygulaması</Link>
+          <Link to="/home">Anket Uygulaması</Link>
         </h1>
 
         <button
@@ -67,19 +67,19 @@ function Navbar() {
                     to="/admin/anket-ekle"
                     className="block px-4 py-2 hover:bg-gray-100"
                   >
-                    ➕ Anket Ekle
+                    Anket Ekle
                   </Link>
                   <Link
                     to="/admin/anket-sil"
                     className="block px-4 py-2 hover:bg-gray-100"
                   >
-                    🗑️ Anket Sil
+                    Anket Sil
                   </Link>
                   <Link
                     to="/admin/kullanicilar"
                     className="block px-4 py-2 hover:bg-gray-100"
                   >
-                    👥 Kullanıcı Kontrolü
+                    Kullanıcı Kontrolü
                   </Link>
                 </div>
               )}

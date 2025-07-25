@@ -16,12 +16,12 @@ const AdminAnketListe = () => {
     }
   };
 
-  const anketiPasifYap = async (anketId,aciklama) => {
+  const anketiPasifYap = async (anketId, aciklama) => {
     try {
       await axios.put("http://localhost:5024/api/anket/pasif-yap", {
         anketId,
         kullaniciId: parseInt(adminId),
-        pasifAciklama:aciklama
+        pasifAciklama: aciklama
       });
       setMesaj("✅ Anket pasif hale getirildi.");
       anketleriGetir();
@@ -47,10 +47,10 @@ const AdminAnketListe = () => {
             <li key={anket.anketId} className="flex justify-between items-center bg-gray-100 p-4 rounded">
               <span className="font-medium">{anket.soru}</span>
               <button
-                onClick={() =>{
-              const aciklama = prompt("Lütfen anketi pasife alma nedeninizi yazınız:");
-              if (aciklama) anketiPasifYap(anket.anketId, aciklama);
-              }}
+                onClick={() => {
+                  const aciklama = prompt("Lütfen anketi pasife alma nedeninizi yazınız:");
+                  if (aciklama) anketiPasifYap(anket.anketId, aciklama);
+                }}
                 className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
               >
                 Pasife Al

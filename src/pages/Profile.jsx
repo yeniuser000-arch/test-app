@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { useNavigate } from 'react-router-dom'; // Yönlendirme için kullanacağız
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Yönlendirme için kullanıyoruz
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       const decodedToken = jwtDecode(token);
-      const id = decodedToken.sub; 
+      const id = decodedToken.sub;
       fetchUserInfo(id);
     }
   }, []);
@@ -25,7 +25,7 @@ const Profile = () => {
       console.error('Sunucudan kullanıcı bilgileri alınamadı:', err);
 
       if (err.response?.data?.hata) {
-        setError(err.response.data.hata); 
+        setError(err.response.data.hata);
       } else if (err.message) {
         setError(err.message);
       } else {
@@ -35,7 +35,6 @@ const Profile = () => {
   };
 
   const handleEdit = () => {
-    // Düzenleme sayfasına yönlendir
     navigate(`/profile/edit/${userInfo.id}`);
   };
 

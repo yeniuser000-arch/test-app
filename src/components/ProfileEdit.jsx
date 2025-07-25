@@ -4,16 +4,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 const ProfileEdit = () => {
   const { id } = useParams();
-  const [userInfo, setUserInfo] = useState(null); 
+  const [userInfo, setUserInfo] = useState(null);
   const [newUserInfo, setNewUserInfo] = useState({
     username: '',
     email: '',
-    password: '',  
-    confirmPassword: '',  
+    password: '',
+    confirmPassword: '',
   });
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true); 
-  const navigate = useNavigate(); 
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUserInfo(id);
@@ -26,8 +26,8 @@ const ProfileEdit = () => {
       setNewUserInfo({
         username: response.data.username,
         email: response.data.email,
-        password: '',  
-        confirmPassword: '',  
+        password: '',
+        confirmPassword: '',
       });
       setLoading(false);
     } catch (err) {
@@ -62,7 +62,7 @@ const ProfileEdit = () => {
         newUserInfo
       );
       alert('Bilgileriniz başarıyla güncellendi!');
-      navigate('/profile'); 
+      navigate('/profile');
     } catch (err) {
       if (err.response) {
         alert("Hata: " + (err.response?.data?.hata || "Kayıt başarısız."));
@@ -83,7 +83,7 @@ const ProfileEdit = () => {
   return (
     <div className="max-w-2xl mx-auto p-6">
       {loading ? (
-        <div className="text-center">Yükleniyor...</div> 
+        <div className="text-center">Yükleniyor...</div>
       ) : (
         <>
           {error && <div className="text-red-500">{error}</div>}

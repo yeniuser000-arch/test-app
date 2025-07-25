@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode'; // jwt-decode kütüphanesini ekleyelim
+import { jwtDecode } from 'jwt-decode';
 
 const AnketListePop = () => {
   const [anketler, setAnketler] = useState([]);
@@ -12,10 +12,8 @@ const AnketListePop = () => {
   const [showModal, setShowModal] = useState(false);
   const [seciliAnket, setSeciliAnket] = useState(null);
 
-  const [isAdmin, setIsAdmin] = useState(false); // Admin kontrolü
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
-
-  // Admin kontrolünü useEffect ile başlatıyoruz
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -26,8 +24,6 @@ const AnketListePop = () => {
       }
     }
   }, []);
-
-  // Anketleri yüklemek
   useEffect(() => {
     axios.get("http://localhost:5024/api/anket/listele")
       .then(res => {
@@ -93,10 +89,8 @@ const AnketListePop = () => {
             >
               <div className="flex justify-between items-center mb-2">
                 <h4 className="text-xl font-semibold">
-                   {anket.soru}
+                  {anket.soru}
                 </h4>
-
-                {/* Admin'e özel toplam oy sayısını göster */}
                 {isAdmin && (
                   <span className="text-sm text-gray-600">
                     Toplam Oy: {anket.toplamOy}
@@ -127,11 +121,11 @@ const AnketListePop = () => {
       {showModal && seciliAnket && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setShowModal(false)} // dışa tıklayınca kapat
+          onClick={() => setShowModal(false)}
         >
           <div
             className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full relative"
-            onClick={(e) => e.stopPropagation()} // içeriye tıklamayı durdur
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowModal(false)}

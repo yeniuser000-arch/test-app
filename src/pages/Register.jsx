@@ -46,7 +46,7 @@ function Register() {
     }
 
     try {
-      const { ConfirmPassword, ...postData } = form; // ConfirmPassword gönderilmeyecek
+      const { ConfirmPassword, ...postData } = form; 
       const res = await axios.post("http://localhost:5024/api/user/register", postData);
       alert("Kayıt başarılı: " + res.data.message);
       navigate("/home");

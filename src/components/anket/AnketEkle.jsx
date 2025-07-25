@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 const AnketEkle = () => {
   const [soru, setSoru] = useState("");
   const [secenekler, setSecenekler] = useState(["", ""]);
-  const [sifre, setSifre] = useState(""); // 🔐 Şifre
+  const [sifre, setSifre] = useState("");
   const [mesaj, setMesaj] = useState("");
   const navigate = useNavigate();
 
@@ -30,7 +30,7 @@ const AnketEkle = () => {
     try {
       const response = await axios.post("http://localhost:5024/api/anket/ekle", {
         soru,
-        sifre: sifre.trim(), // 🔐 şifre de gönderiliyor
+        sifre: sifre.trim(),
         secenekler: temizSecenekler.map(s => ({ secenek_adi: s }))
       });
 

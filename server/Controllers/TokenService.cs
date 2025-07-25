@@ -43,5 +43,5 @@ public class TokenService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-    
+
 }

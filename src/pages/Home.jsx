@@ -37,8 +37,6 @@ const Home = () => {
   return (
     <div className="p-8 font-sans">
       <h2 className="text-3xl font-bold mb-8 text-gray-800"> Yayınlanan Anketler</h2>
-
-      {/* Filtre Butonları */}
       <div className="flex gap-4 mb-10">
         {["tum", "aktif", "pasif"].map((type) => (
           <button
@@ -57,8 +55,6 @@ const Home = () => {
           </button>
         ))}
       </div>
-
-      {/* Anketler */}
       {filtrelenmisAnketler.length === 0 ? (
         <p className="text-gray-500">Bu kritere uygun anket bulunamadı.</p>
       ) : (
@@ -74,10 +70,10 @@ const Home = () => {
             >
               <div className="flex justify-between items-center mb-2">
                 <h4 className="text-xl font-semibold">
-                   {anket.soru}
+                  {anket.soru}
                 </h4>
 
-                 {!anket.aktif && (
+                {!anket.aktif && (
                   <div className="flex items-center gap-2">
                     <span className="text-xs px-2 py-1 bg-red-100 text-red-500 rounded">Pasif</span>
 
@@ -100,11 +96,11 @@ const Home = () => {
       {showModal && seciliAnket && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setShowModal(false)} // dışa tıklayınca kapat
+          onClick={() => setShowModal(false)}
         >
           <div
             className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full relative"
-            onClick={(e) => e.stopPropagation()} // içeriye tıklamayı durdur
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setShowModal(false)}

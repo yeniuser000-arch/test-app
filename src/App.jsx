@@ -18,11 +18,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Herkese açık sayfalar */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
-        {/* Kullanıcı girişi gerektiren Layout yapısı */}
         <Route
           path="/"
           element={
@@ -34,11 +31,11 @@ function App() {
           <Route path="home" element={<Home />} />
           <Route path="anket/:id" element={<AnketDetay />} />
           <Route path="anketListePop" element={<AnketListePop />} />
-          <Route path="profile" element={<Profile/>}/>
-          <Route path="profile/edit/:id" element={<ProfileEdit/>} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="profile/edit/:id" element={<ProfileEdit />} />
         </Route>
 
-       
+
         <Route
           path="/admin/anket-ekle"
           element={
@@ -67,13 +64,11 @@ function App() {
         <Route
           path="/admin/silinen-kullanicilar"
           element={
-        <PrivateRoute adminOnly={true}>
-        <SilinenKullanicilar />
-        </PrivateRoute>
-        }
+            <PrivateRoute adminOnly={true}>
+              <SilinenKullanicilar />
+            </PrivateRoute>
+          }
         />
-
-        {/* Varsayılan yönlendirme */}
         <Route path="*" element={<Login />} />
       </Routes>
     </Router>

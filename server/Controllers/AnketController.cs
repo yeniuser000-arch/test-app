@@ -19,19 +19,17 @@ public class AnketController : ControllerBase
 
         using var conn = new MySqlConnection(_connectionString);
         conn.Open();
-
-        // ✅ Sifre dahil edildi
         var anketEkleQuery = "INSERT INTO anketler (soru, sifre) VALUES (@soru, @sifre)";
         using var anketCmd = new MySqlCommand(anketEkleQuery, conn);
         anketCmd.Parameters.AddWithValue("@soru", yeniAnket.Soru);
         anketCmd.Parameters.AddWithValue("@sifre", string.IsNullOrWhiteSpace(yeniAnket.Sifre)
          ? DBNull.Value : yeniAnket.Sifre);
-         
+
         anketCmd.ExecuteNonQuery();
 
         int anketId = (int)anketCmd.LastInsertedId;
 
-        
+
         foreach (var secenek in yeniAnket.Secenekler)
         {
             var secenekCmd = new MySqlCommand("INSERT INTO secenekler (anket_id, secenek_adi) VALUES (@anketId, @secenek)", conn);
@@ -113,83 +111,76 @@ public class AnketController : ControllerBase
         }
 
         return Ok(anketler);
-    }[HttpGet("{id}")]
-public IActionResult AnketDetay(int id, [FromQuery] int kullaniciId, [FromQuery] string? sifre)
-{
-    using var conn = new MySqlConnection(_connectionString);
-    conn.Open();
+    }
+    [HttpGet("{id}")]
+    public IActionResult AnketDetay(int id, [FromQuery] int kullaniciId, [FromQuery] string? sifre)
+    {
+        using var conn = new MySqlConnection(_connectionString);
+        conn.Open();
+        int? kullaniciSecimi = null;
+        DateTime? oyTarihi = null;
 
-    // 1. Kullanıcı oy vermiş mi, hangi seçeneğe, ne zaman?
-    int? kullaniciSecimi = null;
-    DateTime? oyTarihi = null;
-
-    var kontrolCmd = new MySqlCommand(@"
+        var kontrolCmd = new MySqlCommand(@"
         SELECT o.secenek_id, o.oy_tarihi
         FROM oylar o
         JOIN secenekler s ON o.secenek_id = s.secenek_id
         WHERE s.anket_id = @anketId AND o.kullanici_id = @kid
         LIMIT 1", conn);
 
-    kontrolCmd.Parameters.AddWithValue("@anketId", id);
-    kontrolCmd.Parameters.AddWithValue("@kid", kullaniciId);
+        kontrolCmd.Parameters.AddWithValue("@anketId", id);
+        kontrolCmd.Parameters.AddWithValue("@kid", kullaniciId);
 
-    using var kontrolReader = kontrolCmd.ExecuteReader();
-    if (kontrolReader.Read())
-    {
-        kullaniciSecimi = kontrolReader.GetInt32("secenek_id");
-        oyTarihi = kontrolReader.GetDateTime("oy_tarihi");
-    }
-    kontrolReader.Close();
-
-    // 2. Anket detayını ve şifresini al
-    var cmd = new MySqlCommand("SELECT soru, sifre, aktif FROM anketler WHERE anket_id = @id", conn);
-    cmd.Parameters.AddWithValue("@id", id);
-    using var reader = cmd.ExecuteReader();
-
-    if (!reader.Read()) return NotFound();
-
-    string soru = reader.GetString("soru");
-    string? dbSifre = reader["sifre"] as string;
-    bool aktif = reader.GetBoolean("aktif");
-
-    // 3. Şifre kontrolü
-    if (!string.IsNullOrEmpty(dbSifre))
-    {
-        if (string.IsNullOrWhiteSpace(sifre) || dbSifre != sifre)
+        using var kontrolReader = kontrolCmd.ExecuteReader();
+        if (kontrolReader.Read())
         {
-            return Unauthorized(new { mesaj = "Bu ankete erişmek için doğru şifre girmeniz gereklidir." });
+            kullaniciSecimi = kontrolReader.GetInt32("secenek_id");
+            oyTarihi = kontrolReader.GetDateTime("oy_tarihi");
         }
-    }
+        kontrolReader.Close();
+        var cmd = new MySqlCommand("SELECT soru, sifre, aktif FROM anketler WHERE anket_id = @id", conn);
+        cmd.Parameters.AddWithValue("@id", id);
+        using var reader = cmd.ExecuteReader();
 
-    reader.Close();
+        if (!reader.Read()) return NotFound();
 
-    // 4. Seçenekleri getir
-    var secenekler = new List<object>();
-    var secenekCmd = new MySqlCommand("SELECT * FROM secenekler WHERE anket_id = @id", conn);
-    secenekCmd.Parameters.AddWithValue("@id", id);
-    using var secenekReader = secenekCmd.ExecuteReader();
-
-    while (secenekReader.Read())
-    {
-        secenekler.Add(new
+        string soru = reader.GetString("soru");
+        string? dbSifre = reader["sifre"] as string;
+        bool aktif = reader.GetBoolean("aktif");
+        if (!string.IsNullOrEmpty(dbSifre))
         {
-            secenek_id = secenekReader.GetInt32("secenek_id"),
-            secenek_adi = secenekReader.GetString("secenek_adi"),
-            oy_sayisi = secenekReader.GetInt32("oy_sayisi")
+            if (string.IsNullOrWhiteSpace(sifre) || dbSifre != sifre)
+            {
+                return Unauthorized(new { mesaj = "Bu ankete erişmek için doğru şifre girmeniz gereklidir." });
+            }
+        }
+
+        reader.Close();
+        var secenekler = new List<object>();
+        var secenekCmd = new MySqlCommand("SELECT * FROM secenekler WHERE anket_id = @id", conn);
+        secenekCmd.Parameters.AddWithValue("@id", id);
+        using var secenekReader = secenekCmd.ExecuteReader();
+
+        while (secenekReader.Read())
+        {
+            secenekler.Add(new
+            {
+                secenek_id = secenekReader.GetInt32("secenek_id"),
+                secenek_adi = secenekReader.GetString("secenek_adi"),
+                oy_sayisi = secenekReader.GetInt32("oy_sayisi")
+            });
+        }
+
+        return Ok(new
+        {
+            anketId = id,
+            soru = soru,
+            aktif = aktif,
+            secenekler = secenekler,
+            oyVerildi = kullaniciSecimi != null,
+            kullaniciSecimi = kullaniciSecimi,
+            oyTarihi = oyTarihi
         });
     }
-
-    return Ok(new
-    {
-        anketId = id,
-        soru = soru,
-        aktif = aktif,
-        secenekler = secenekler,
-        oyVerildi = kullaniciSecimi != null,
-        kullaniciSecimi = kullaniciSecimi,
-        oyTarihi = oyTarihi
-    });
-}
 
     [HttpPost("oyver")]
     public IActionResult OyVer([FromBody] OyDto oy)
@@ -206,16 +197,12 @@ public IActionResult AnketDetay(int id, [FromQuery] int kullaniciId, [FromQuery]
 
             using var conn = new MySqlConnection(_connectionString);
             conn.Open();
-
-            // Kullanıcı gerçekten var mı?
             var kullaniciKontrolCmd = new MySqlCommand("SELECT COUNT(*) FROM kullanici WHERE kullanici_id = @kid", conn);
             kullaniciKontrolCmd.Parameters.AddWithValue("@kid", oy.KullaniciId);
             var kullaniciVarMi = Convert.ToInt32(kullaniciKontrolCmd.ExecuteScalar());
 
             if (kullaniciVarMi == 0)
                 return BadRequest(new { mesaj = "Kullanıcı bulunamadı." });
-
-            // Seçeneğin ait olduğu anket aktif mi?
             var aktiflikCmd = new MySqlCommand(@"
             SELECT a.aktif 
             FROM anketler a
@@ -227,8 +214,6 @@ public IActionResult AnketDetay(int id, [FromQuery] int kullaniciId, [FromQuery]
 
             if (!aktifMi)
                 return BadRequest(new { mesaj = "Bu anket artık aktif değil, oy verilemez." });
-
-            // Kullanıcı bu ankete daha önce oy vermiş mi?
             var kontrolCmd = new MySqlCommand(@"
             SELECT COUNT(*) 
             FROM oylar o
@@ -243,14 +228,10 @@ public IActionResult AnketDetay(int id, [FromQuery] int kullaniciId, [FromQuery]
 
             if (varMi > 0)
                 return BadRequest(new { mesaj = "Bu ankete zaten oy verdiniz." });
-
-            // Oy ekle
             var ekleCmd = new MySqlCommand("INSERT INTO oylar (secenek_id, kullanici_id, oy_tarihi) VALUES (@sid, @kid, NOW())", conn);
             ekleCmd.Parameters.AddWithValue("@sid", oy.SecenekId);
             ekleCmd.Parameters.AddWithValue("@kid", oy.KullaniciId);
             ekleCmd.ExecuteNonQuery();
-
-            // Oy sayısını artır
             var guncelleCmd = new MySqlCommand("UPDATE secenekler SET oy_sayisi = oy_sayisi + 1 WHERE secenek_id = @sid", conn);
             guncelleCmd.Parameters.AddWithValue("@sid", oy.SecenekId);
             guncelleCmd.ExecuteNonQuery();
@@ -337,5 +318,4 @@ public IActionResult AnketDetay(int id, [FromQuery] int kullaniciId, [FromQuery]
             ? Ok(new { mesaj = "Anket pasif yapıldı." })
             : BadRequest(new { mesaj = "Anket pasif hale getirilemedi." });
     }
-
 }
